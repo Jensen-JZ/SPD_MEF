@@ -44,10 +44,14 @@ def down_sample(seq_imgs, max_size=None):
 
     if img_height >= img_width and img_height > max_size:
         sample_factor = img_height / max_size
-        down_spl_imgs = cv2.resize(seq_imgs, (np.floor(img_width / sample_factor), max_size), cv2.INTER_LINEAR)
+        down_spl_imgs = np.zeros((max_size, int(np.floor(img_width / sample_factor)), seq_imgs.shape[-2], seq_imgs.shape[-1]))
+        for i in range(seq_imgs.shape[-1]):
+            down_spl_imgs[:, :, :, i] = cv2.resize(seq_imgs[:, :, :, i], (int(np.floor(img_width / sample_factor)), max_size), cv2.INTER_LINEAR)
     elif img_height < img_width and img_width > max_size:
         sample_factor = img_width / max_size
-        down_spl_imgs = cv2.resize(seq_imgs, (max_size, np.floor(img_height / sample_factor)), cv2.INTER_LINEAR)
+        down_spl_imgs = np.zeros((int(np.floor(img_height / sample_factor)), max_size, seq_imgs.shape[2], seq_imgs.shape[-1]))
+        for i in range(seq_imgs.shape[-1]):
+            down_spl_imgs[:, :, :, i] = cv2.resize(seq_imgs[:, :, :, i], (max_size, int(np.floor(img_height / sample_factor))), cv2.INTER_LINEAR)
     else:
         down_spl_imgs = seq_imgs
 
@@ -65,8 +69,8 @@ def select_ref_idx(seq_imgs, win_size=None, expos_thres=None):
     seq_imgs = reorder_by_lum(seq_imgs)
     [_, _, size_3, size_4] = seq_imgs.shape
 
-    if size_3 == 4:
-        idx = 2
+    if size_4 == 3:
+        ref_idx = 1
     else:
         window = np.ones((win_size, win_size, 3))
         window = window / window.sum()
